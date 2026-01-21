@@ -2,95 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap');
+
+/* 静かな絆 - Silent Bond Design System
+   A meditative, minimalist design inspired by twilight skies
+   All colors in HSL
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Deep indigo twilight palette */
+    --background: 220 60% 8%;
+    --foreground: 45 20% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 50% 12%;
+    --card-foreground: 45 20% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 50% 10%;
+    --popover-foreground: 45 20% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Golden/amber accent for ripples */
+    --primary: 45 80% 65%;
+    --primary-foreground: 220 60% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 40% 20%;
+    --secondary-foreground: 45 20% 90%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 30% 18%;
+    --muted-foreground: 220 15% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 45 70% 55%;
+    --accent-foreground: 220 60% 8%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 220 30% 20%;
+    --input: 220 30% 20%;
+    --ring: 45 80% 65%;
+
+    --radius: 0.5rem;
+
+    /* Custom colors for visualization */
+    --twilight-deep: 220 65% 6%;
+    --twilight-mid: 220 55% 12%;
+    --twilight-light: 215 45% 25%;
+    --golden-warm: 45 85% 60%;
+    --golden-soft: 50 70% 75%;
+    --golden-pale: 55 50% 85%;
+
+    --sidebar-background: 220 60% 8%;
+    --sidebar-foreground: 45 20% 90%;
+    --sidebar-primary: 45 80% 65%;
+    --sidebar-primary-foreground: 220 60% 8%;
+    --sidebar-accent: 220 40% 20%;
+    --sidebar-accent-foreground: 45 20% 90%;
+    --sidebar-border: 220 30% 20%;
+    --sidebar-ring: 45 80% 65%;
+  }
+
+  .dark {
+    --background: 220 60% 8%;
+    --foreground: 45 20% 90%;
+
+    --card: 220 50% 12%;
+    --card-foreground: 45 20% 90%;
+
+    --popover: 220 50% 10%;
+    --popover-foreground: 45 20% 90%;
+
+    --primary: 45 80% 65%;
+    --primary-foreground: 220 60% 8%;
+
+    --secondary: 220 40% 20%;
+    --secondary-foreground: 45 20% 90%;
+
+    --muted: 220 30% 18%;
+    --muted-foreground: 220 15% 55%;
+
+    --accent: 45 70% 55%;
+    --accent-foreground: 220 60% 8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 30% 20%;
+    --input: 220 30% 20%;
+    --ring: 45 80% 65%;
+
+    --sidebar-background: 220 60% 8%;
+    --sidebar-foreground: 45 20% 90%;
+    --sidebar-primary: 45 80% 65%;
+    --sidebar-primary-foreground: 220 60% 8%;
+    --sidebar-accent: 220 40% 20%;
+    --sidebar-accent-foreground: 45 20% 90%;
+    --sidebar-border: 220 30% 20%;
+    --sidebar-ring: 45 80% 65%;
   }
 }
 
@@ -100,6 +107,31 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  html, body, #root {
+    @apply h-full w-full overflow-hidden;
+  }
+}
+
+@layer components {
+  .save-button {
+    @apply fixed bottom-5 right-5 px-4 py-2.5 text-xs tracking-wider;
+    @apply border border-border rounded-md;
+    @apply bg-background/30 text-muted-foreground;
+    @apply backdrop-blur-md transition-all duration-300;
+    @apply hover:bg-background/50 hover:text-foreground hover:border-primary/50;
+    @apply cursor-pointer select-none;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+  }
+
+  .hint-text {
+    @apply fixed top-5 left-5 text-xs tracking-wide;
+    @apply text-muted-foreground/50 pointer-events-none;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
   }
 }
