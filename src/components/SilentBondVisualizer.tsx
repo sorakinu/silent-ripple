@@ -84,9 +84,9 @@ class Particle implements VisualElement {
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += 0.03; // Gentle gravity
-    this.alpha -= 3;
-    this.size *= 0.985;
+    this.vy += 0.015; // Very gentle gravity
+    this.alpha -= 0.6; // Much slower fade = longer visible
+    this.size *= 0.997; // Slower shrink
   }
 
   display(p: p5) {
