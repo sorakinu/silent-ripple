@@ -22,22 +22,22 @@ class Ripple implements VisualElement {
     this.x = x;
     this.y = y;
     this.r = 0;
-    this.alpha = 120; // More transparent
+    this.alpha = 150; // Slightly more visible
 
     if (speed === 'slow') {
-      this.maxR = 350;
-      this.growthRate = 1.5;
+      this.maxR = 500;
+      this.growthRate = 0.8; // Much slower growth = longer duration
       this.color = [255, 220, 130]; // Soft golden
     } else {
-      this.maxR = 180;
-      this.growthRate = 2.5;
+      this.maxR = 280;
+      this.growthRate = 1.2; // Slower growth
       this.color = [220, 235, 255]; // Pale blue-white
     }
   }
 
   update() {
     this.r += this.growthRate;
-    this.alpha -= 0.8;
+    this.alpha -= 0.3; // Much slower fade = longer visible
   }
 
   display(p: p5) {
