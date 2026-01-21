@@ -247,7 +247,7 @@ const SilentBondVisualizer = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 1 }}
         >
-          画面をタップして波紋を刻む
+          Tap to create ripples
         </motion.div>
       </AnimatePresence>
 

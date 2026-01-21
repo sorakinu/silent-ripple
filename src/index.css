@@ -129,9 +129,9 @@
   }
 
   .hint-text {
-    @apply fixed top-5 left-5 text-xs tracking-wide;
-    @apply text-muted-foreground/50 pointer-events-none;
+    @apply fixed top-5 left-5 text-sm tracking-wide;
+    @apply text-foreground/70 pointer-events-none;
     font-family: 'Noto Sans JP', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
   }
 }
