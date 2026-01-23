@@ -9,52 +9,115 @@ interface VisualElement {
   isDead: () => boolean;
 }
 
+// Heart rate tracker for atmosphere control
+class HeartRateTracker {
+  private intervals: number[] = [];
+  private maxSamples = 10;
+  
+  addInterval(interval: number) {
+    this.intervals.push(interval);
+    if (this.intervals.length > this.maxSamples) {
+      this.intervals.shift();
+    }
+  }
+  
+  // Returns a normalized "calm" value from 0 (anxious) to 1 (calm)
+  getCalmness(): number {
+    if (this.intervals.length < 2) return 0.5;
+    const avg = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
+    // Map: <200ms = anxious (0), >800ms = calm (1)
+    return Math.min(1, Math.max(0, (avg - 200) / 600));
+  }
+}
+
 class Ripple implements VisualElement {
   x: number;
   y: number;
   r: number;
   alpha: number;
   maxR: number;
-  growthRate: number;
+  baseGrowthRate: number;
   color: [number, number, number];
+  phase: number; // For wobble effect
+  wobbleAmount: number;
+  wobbleSpeed: number;
+  dissolved: boolean;
 
-  constructor(x: number, y: number, speed: 'slow' | 'medium') {
+  constructor(x: number, y: number, speed: 'slow' | 'medium', p: p5) {
     this.x = x;
     this.y = y;
     this.r = 0;
-    this.alpha = 150; // Slightly more visible
+    this.alpha = 180;
+    this.dissolved = false;
+    this.phase = p.random(p.TWO_PI);
+    this.wobbleSpeed = p.random(0.02, 0.04);
 
     if (speed === 'slow') {
-      this.maxR = 500;
-      this.growthRate = 0.8; // Much slower growth = longer duration
+      this.maxR = 600;
+      this.baseGrowthRate = 1.2;
       this.color = [255, 220, 130]; // Soft golden
+      this.wobbleAmount = 8; // More organic wobble
     } else {
-      this.maxR = 280;
-      this.growthRate = 1.2; // Slower growth
+      this.maxR = 320;
+      this.baseGrowthRate = 1.5;
       this.color = [220, 235, 255]; // Pale blue-white
+      this.wobbleAmount = 4;
     }
   }
 
   update() {
-    this.r += this.growthRate;
-    this.alpha -= 0.3; // Much slower fade = longer visible
+    // Deceleration aesthetics: slower as it expands
+    const progress = this.r / this.maxR;
+    const deceleration = Math.pow(1 - progress, 0.5); // Gradually slows
+    this.r += this.baseGrowthRate * deceleration;
+    
+    // Instead of disappearing, dissolve into background
+    if (progress > 0.7) {
+      // Start dissolving
+      this.alpha -= 0.8 * (progress - 0.7) / 0.3;
+      this.dissolved = true;
+    }
+    
+    this.phase += this.wobbleSpeed;
   }
 
   display(p: p5) {
     p.noFill();
-    p.strokeWeight(1.5);
-    p.stroke(this.color[0], this.color[1], this.color[2], this.alpha);
-    p.ellipse(this.x, this.y, this.r * 2);
-
-    // Double ripple effect
-    p.stroke(this.color[0], this.color[1], this.color[2], this.alpha * 0.4);
-    p.strokeWeight(0.8);
-    p.ellipse(this.x, this.y, this.r * 2 + 15);
-
-    // Third subtle ring
-    p.stroke(this.color[0], this.color[1], this.color[2], this.alpha * 0.2);
-    p.strokeWeight(0.5);
-    p.ellipse(this.x, this.y, this.r * 2 + 30);
+    
+    // Draw wobbling ripple using vertices
+    const segments = 60;
+    for (let ring = 0; ring < 3; ring++) {
+      const ringOffset = ring * 15;
+      const ringAlpha = this.alpha * (1 - ring * 0.3);
+      const strokeW = ring === 0 ? 1.5 : (ring === 1 ? 0.8 : 0.5);
+      
+      p.strokeWeight(strokeW);
+      p.stroke(this.color[0], this.color[1], this.color[2], ringAlpha);
+      
+      p.beginShape();
+      for (let i = 0; i <= segments; i++) {
+        const angle = (i / segments) * p.TWO_PI;
+        // Organic wobble: multiple sine waves for natural water-like distortion
+        const wobble = 
+          Math.sin(angle * 3 + this.phase) * this.wobbleAmount +
+          Math.sin(angle * 5 - this.phase * 1.3) * (this.wobbleAmount * 0.5) +
+          Math.sin(angle * 7 + this.phase * 0.7) * (this.wobbleAmount * 0.25);
+        
+        const radius = this.r + ringOffset + wobble;
+        const px = this.x + Math.cos(angle) * radius;
+        const py = this.y + Math.sin(angle) * radius;
+        p.vertex(px, py);
+      }
+      p.endShape(p.CLOSE);
+    }
+    
+    // Soft glow in center when dissolving
+    if (this.dissolved) {
+      const glowAlpha = this.alpha * 0.3;
+      p.noStroke();
+      p.fill(this.color[0], this.color[1], this.color[2], glowAlpha);
+      p.circle(this.x, this.y, this.r * 0.3);
+    }
   }
 
   isDead() {
@@ -69,24 +132,57 @@ class Particle implements VisualElement {
   vy: number;
   alpha: number;
   size: number;
+  canvasWidth: number;
+  canvasHeight: number;
+  edgeAttraction: number;
 
-  constructor(p: p5, x: number, y: number) {
+  constructor(p: p5, x: number, y: number, calmness: number) {
     this.x = x;
     this.y = y;
+    this.canvasWidth = p.width;
+    this.canvasHeight = p.height;
+    
+    // Initial burst direction
     const angle = p.random(p.TWO_PI);
-    const speed = p.random(0.3, 1.5);
+    const speed = p.random(0.5, 2);
     this.vx = p.cos(angle) * speed;
     this.vy = p.sin(angle) * speed;
-    this.alpha = 180;
+    this.alpha = 200;
     this.size = p.random(2, 5);
+    
+    // Edge attraction: stronger when user is anxious (low calmness)
+    this.edgeAttraction = p.map(calmness, 0, 1, 0.08, 0.02);
   }
 
   update() {
+    // Find nearest edge and create attraction force
+    const distToLeft = this.x;
+    const distToRight = this.canvasWidth - this.x;
+    const distToTop = this.y;
+    const distToBottom = this.canvasHeight - this.y;
+    
+    const minHorizontal = Math.min(distToLeft, distToRight);
+    const minVertical = Math.min(distToTop, distToBottom);
+    
+    // Pull toward nearest edge (absorbing anxiety)
+    if (minHorizontal < minVertical) {
+      this.vx += distToLeft < distToRight ? -this.edgeAttraction : this.edgeAttraction;
+    } else {
+      this.vy += distToTop < distToBottom ? -this.edgeAttraction : this.edgeAttraction;
+    }
+    
+    // Apply velocity with slight damping
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += 0.015; // Very gentle gravity
-    this.alpha -= 0.6; // Much slower fade = longer visible
-    this.size *= 0.997; // Slower shrink
+    this.vx *= 0.995;
+    this.vy *= 0.995;
+    
+    // Fade faster as approaching edge
+    const edgeDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+    const edgeFade = edgeDist < 100 ? 1.5 : 0.5;
+    this.alpha -= edgeFade;
+    
+    this.size *= 0.998;
   }
 
   display(p: p5) {
@@ -106,7 +202,9 @@ class Particle implements VisualElement {
   }
 
   isDead() {
-    return this.alpha <= 0;
+    return this.alpha <= 0 || 
+           this.x < -20 || this.x > this.canvasWidth + 20 ||
+           this.y < -20 || this.y > this.canvasHeight + 20;
   }
 }
 
@@ -116,6 +214,8 @@ const SilentBondVisualizer = () => {
   const elementsRef = useRef<VisualElement[]>([]);
   const lastClickTimeRef = useRef<number>(0);
   const bgImageRef = useRef<p5.Image | null>(null);
+  const heartRateRef = useRef<HeartRateTracker>(new HeartRateTracker());
+  const atmosphereRef = useRef<number>(0.5); // 0 = anxious, 1 = calm
 
   const handleSave = useCallback(() => {
     if (p5InstanceRef.current) {
@@ -159,10 +259,18 @@ const SilentBondVisualizer = () => {
       };
 
       p.draw = () => {
-        // Background with image
+        // Smoothly transition atmosphere based on heart rate
+        const targetAtmosphere = heartRateRef.current.getCalmness();
+        atmosphereRef.current += (targetAtmosphere - atmosphereRef.current) * 0.02;
+        
+        // Background with image - tint shifts based on atmosphere
         if (bgImage && bgImage.width > 0) {
           p.push();
-          p.tint(60, 80, 120, 200); // Darken and shift to deep blue
+          // More blue when anxious, warmer when calm
+          const tintR = p.lerp(40, 80, atmosphereRef.current);
+          const tintG = p.lerp(60, 90, atmosphereRef.current);
+          const tintB = p.lerp(140, 100, atmosphereRef.current);
+          p.tint(tintR, tintG, tintB, 200);
           p.translate(p.width / 2, p.height / 2);
           const scale = Math.max(
             p.width / bgImage.width,
@@ -180,8 +288,9 @@ const SilentBondVisualizer = () => {
           p.image(gradientBg, 0, 0);
         }
 
-        // Semi-transparent overlay for trail effect
-        p.fill(8, 18, 35, 12);
+        // Semi-transparent overlay - opacity varies with atmosphere
+        const overlayAlpha = p.lerp(18, 8, atmosphereRef.current);
+        p.fill(8, 18, 35, overlayAlpha);
         p.noStroke();
         p.rect(0, 0, p.width, p.height);
 
@@ -202,17 +311,25 @@ const SilentBondVisualizer = () => {
         const currentTime = p.millis();
         const interval = currentTime - lastClickTimeRef.current;
         lastClickTimeRef.current = currentTime;
+        
+        // Track heart rate
+        if (interval < 2000) {
+          heartRateRef.current.addInterval(interval);
+        }
+        
+        const calmness = heartRateRef.current.getCalmness();
 
         if (interval > 600) {
-          // Slow rhythm: large ripple
-          elementsRef.current.push(new Ripple(p.mouseX, p.mouseY, 'slow'));
+          // Slow rhythm: large ripple with organic wobble
+          elementsRef.current.push(new Ripple(p.mouseX, p.mouseY, 'slow', p));
         } else if (interval > 300) {
           // Medium rhythm: medium ripple
-          elementsRef.current.push(new Ripple(p.mouseX, p.mouseY, 'medium'));
+          elementsRef.current.push(new Ripple(p.mouseX, p.mouseY, 'medium', p));
         } else {
-          // Fast rhythm: scatter particles
-          for (let i = 0; i < 10; i++) {
-            elementsRef.current.push(new Particle(p, p.mouseX, p.mouseY));
+          // Fast rhythm: scatter particles that get absorbed by edges
+          const particleCount = Math.floor(p.lerp(15, 8, calmness));
+          for (let i = 0; i < particleCount; i++) {
+            elementsRef.current.push(new Particle(p, p.mouseX, p.mouseY, calmness));
           }
         }
       };
