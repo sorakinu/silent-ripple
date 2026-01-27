@@ -5,6 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/silent-ripple/', 
   // GitHub Pagesのベースパスを設定
   base: '/silent-ripple/',
   resolve: {
